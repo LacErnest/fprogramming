@@ -2,142 +2,115 @@ import { useState } from 'react'
 import logo from './logo.svg'
 import './App.css'
 
+import Todo from './Todo';
+
+import { immerable, current, original } from 'immer'
+
+//import { compose, pipe } from 'lodash/fp'
+
+import { produce } from 'immer'
+
 function App() {
 
+  //Excercice
+  //Créer une classe User{username, email, password}
+  //Article {titre, auteur, date_publication, status[published, draft, pending], 
+  //payant:(true, false), prix: (si payant prix > 0, sinon prix =0)}
 
-  //N'est pas une fonction pure
-  // let PI = 3.2;
-  // const calculerSurfaceCercle = (rayon) => rayon * rayon * PI
-  // console.log(calculerSurfaceCercle(10))
+  //Commande {owner: <User>, articles:[{<Article>}]}
 
+  //Initialiser les classes avec 5 utilisateurs (5 objets de type User)
+  //avec 10 articles
+  // 10 commandes avec au moins 2 articles par commandes
 
-  //Fonction Pure
-  const PI = 3.14
-  const calculerSurfaceCercle = (rayon, pi) => rayon * rayon * pi;
+  //Créer la fonction commander qui va créer une commande
+  //Créer la fonction annulerCommandeArticle qui va prendre l'index d'un article d'une commande et la retirer de la commande
+  //Créer la foonction modifierArticle qui modifie une information d'un article
+  //Créer la fonction modifierUser qui modifie une information d'un utilisateur
 
-  console.log(calculerSurfaceCercle(10, PI))
-
-  //Lire un fichier
-  //N'est pas une fonction  pure
-  // const compteurDeCaractere = (texte) => 'nombre de caractère : ' + texte.length
-
-  // function lireFichier(nom_fichier) {
-  //   let contenu_fichier = open(nom_fichier);
-  //   return compteurDeCaractere(contenu_fichier);
-  // }
-
-  //La fonction n'est pas une fonction pure
-  // function heureSupp() {
-  //   if (Math.random() > 40) {
-  //     return "Payer les heures supps"
-  //   } else {
-  //     return "Pas d'heures supps"
-  //   }
-  // }
-  //console.log(heureSupp)
+  //Il faudra appliquer la methode immerable pour les modifications des objets
 
 
-  // let compteur = 1;
-  // //La fonction n'est pas pure
-  // function incrementer(valeur) {
-  //   compteur = valeur + 1
-  // }
 
-
-  // incrementer(compteur);
-  // console.log(compteur); //2
-
-  //Fonction pure 
-  // let compteur
-
-  // function incrementer(valeur) {
-  //   return valeur + 1
-  // }
-
-  // incrementer(compteur) //2
-  // console.log(compteur) //1
-
-
-  // Fonction pure
-  // let list = [1, 2, 3, 4, 5]
-
-  // const incrementerNombre = (list) => list.map(nombre => nombre + 1)
-
-  // console.log(incrementerNombre(list)); // [2, 3, 4, 5, 6]
-
-
-  //La somme est mutable
-  let tableau = [1, 2, 3, 4, 5]
-
-  let sumOfValues = 0;
-
-  for (var i = 0; i < tableau.length; i++) {
-    sumOfValues += tableau[i]
+  const todo = {
+    todos: [
+      { titre: 'todo1', is_finished: false },
+      { titre: 'todo2', is_finished: false },
+      { titre: 'todo3', is_finished: false },
+    ]
   }
 
-  console.log(sumOfValues); //15
+  const todotoggle = produce(function (draft, todo) {
+    const selectTodo = draft.todos.find(t => {
+      console.log("draft", t)
+      console.log("objet courant", current(t))
+      console.log("objet original", original(t))
 
-  //La somme est immutable
-  // let tab = [1, 2, 3, 4, 5]
-  // let accumulateur = 0;
+      return original(t) === todo
+    })
 
-  // function sum(tab, accumulateur) {
-  //   if (tab.length == 0) {
-  //     return accumulateur
+    selectTodo.is_finished = !selectTodo.is_finished
+  })
+
+
+  //La nouvelle liste de todo à partir de la liste de todo avec modification de la todo de l'index 1
+  const todo_test = todotoggle(todo, todo.todos[1])
+  console.log(todo, todo_test)
+
+
+  // Todo[immerable] = true
+
+  // const todos = [
+  //   new Todo('titre1'),
+  //   new Todo('titre2'),
+  //   new Todo('titre3'),
+  // ]
+
+  // const newTodos = produce(todos, draft => {
+  //   draft[0].toggle()
+  // })
+
+  // console.log(todos === newTodos) //true
+
+
+  //Ne garde pas l'immutabilité de todo
+  // function changementEtat(todo, index) {
+  //   if (index > todo.todos.length) {
+  //     return todo
   //   }
 
-  //   return sum(tab.slice(1), accumulateur + tab[0])
+  //   todo.todos[index].is_finished = !todo.todos[index].is_finished
+  //   return todo
   // }
 
-  // console.log(sum(tab, accumulateur));
-  // console.log(tab);
-  // console.log(accumulateur);
-
-  function ajout(a, b) {
-    return a + b;
-  }
-
-  console.log(ajout(1, 2))
-
-  //Currying
-  ajout = (a) => (b) => a + b;
-  console.log(ajout(1)(2))
+  //console.log("depart", todo)
+  //console.log("fin", changementEtat(todo, 2))
 
 
-  tableau = [21, 515, 478, 523, 50, 9, 71]
-  //Quelques fonctions pures de javascript
-  //Filter permet de filtrer des éléments
-  const elementPaires = x => x % 2 === 0;
+  //Garde l'immutabilité
+  // function changementEtatImmutable(todo, index) {
+  //   if (index > todo.todos.length) {
+  //     return todo
+  //   }
 
-  console.log("elements paires", tableau.filter(elementPaires))
+  //   return {
+  //     ...todo,
+  //     todos: todo.todos.map((element, i) => i === index ? { ...element, is_finished: !element.is_finished } : element)
+  //   }
+  // }
 
-  //Map permet de boucler sur les éléments
-  const double = x => 2 * x;
-  console.log("double", tableau.map(double))
+  // console.log("debut immutable", todo)
+  // console.log("fin immutable", changementEtatImmutable(todo, 1))
 
-  //Reduce retourne une valeur comme résultat
-  const somme = (accumulateur, tableau_element) => accumulateur + tableau_element
+  // function changementEtatImmer(todo, index) {
+  //   return produce(todo, function (draft) {
+  //     console.log("draft", draft)
+  //     draft.todos[index].is_finished = !draft.todos[index].is_finished
+  //   })
+  // }
 
-  console.log("Somme des éléments", tableau.reduce(somme));
-
-  //Concat  rajoute un élément dans un tableau en créant un nouveau
-  console.log("Concaténation", tableau.concat([0, 2]))
-
-  const tableau_concatene = [21, 515, 478, 523, 50, 9, 71, ...[0, 2]]
-  console.log("concaténé avec les spread operator", tableau_concatene)
-
-
-  //Object assign copie les valeurs d'un objet et les rajoute à un nouvel objet
-  const obj = { nom: 'Ernest' };
-  //const newObj = Object.assign({}, obj)
-  //newObj.nom = 'Inconnu'
-
-  const newObj = { ...obj }
-  newObj.nom = 'Inconnu'
-
-  console.log(obj, newObj)
-
-
+  // console.log("debut immer", todo)
+  // console.log(changementEtatImmer(todo, 1))
 
   return (
     <div className="App">
